@@ -31,7 +31,7 @@ def change_volume(valum):
     player.setVolume(valum)
     colum_count.setText(str(valum))
 volumslider.valueChanged[int].connect(change_volume)
-with open('for_plaer.txt','r') as f:
+with open('for_player.txt','r') as f:
     what = f.read()
 lst = ast.literal_eval(what)
 print(lst)
@@ -107,13 +107,13 @@ def remove():
     item_list = lst
     model.setStringList(item_list)
     full.setModel(model)
-    with open('for_plaer.txt','w') as f:
+    with open('for_player.txt','w') as f:
         f.write(str(lst))
 
 def ran():
     global lst
     global now
-    with open('for_plaer.txt','w') as f:
+    with open('for_player.txt','w') as f:
         shuffle(lst)
         f.write(str(lst))
     now = 0
@@ -127,7 +127,7 @@ def ran():
 def download():
     global lst
     wb_patch = QFileDialog.getOpenFileName()[0]
-    with open('for_plaer.txt','w') as f:
+    with open('for_player.txt','w') as f:
         lst.append(wb_patch)
         f.write(str(lst))
     item_list = lst
