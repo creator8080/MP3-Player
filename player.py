@@ -1,4 +1,5 @@
 from multiprocessing import Value
+from re import M
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, QLineEdit,QMessageBox,QListWidget,
  QHBoxLayout, QVBoxLayout,QFileDialog,QTextBrowser, QSlider,QListView)
 from PyQt5.QtCore import Qt,QTimer,QStringListModel 
@@ -9,6 +10,9 @@ from time import *
 from random import *
 from PyQt5.Qt import QUrl, Qt
 import ast
+from PyQt5.QtGui import *
+import os
+from os.path import basename
 
 app = QApplication([])
 main = QWidget()
@@ -16,13 +20,19 @@ main.setGeometry(400,300,400,300)
 main.setWindowTitle('MP3-Player')
 app.setWindowIcon(QIcon('Mp3-Player-icon.png'))
 
+m = 0
+s = 0 
+time_total = 0
+
 row = QVBoxLayout()
 row1 = QHBoxLayout()
 row2 = QHBoxLayout()
 row3 = QHBoxLayout()
 row4 = QHBoxLayout()
+row5 = QHBoxLayout()
 
 player = QMediaPlayer()
+player_duration = player.duration()
 volumslider = QSlider(Qt.Horizontal)
 volumslider.setFocusPolicy(Qt.NoFocus)
 volumslider.setValue(0)
@@ -34,7 +44,6 @@ volumslider.valueChanged[int].connect(change_volume)
 with open('for_player.txt','r') as f:
     what = f.read()
 lst = ast.literal_eval(what)
-print(lst)
 now = 0
 player.setMedia(QMediaContent(QUrl('')))
 item_list = lst
@@ -42,9 +51,11 @@ model = QStringListModel()
 full = QListView()
 model.setStringList(item_list)
 full.setModel(model)
+plaing = QLabel('Now playing: ')
+plaing_long = QLabel('Long of music: ')
 play = QPushButton('Play')
 next = QPushButton('Next')
-rands = QPushButton('Random')
+rands = QPushButton('Play Random')
 back = QPushButton('Back')
 reset = QPushButton('Reset')
 radio = QPushButton('Radio')
@@ -63,6 +74,8 @@ row2.addWidget(colum_count)
 row3.addWidget(load)
 row3.addWidget(full)
 row4.addWidget(rands)
+row5.addWidget(plaing)
+row5.addWidget(plaing_long)
 
 def playMedia():
     if play.text() == 'Play':
@@ -71,6 +84,39 @@ def playMedia():
     else:
         player.pause()
         play.setText('Play')
+
+def check_music_status():
+    global m
+    global s
+    global player_duration
+    player_status = player.mediaStatus()
+    player_duration = player.duration()
+    m = player_duration//1000//60
+    s = player_duration//1000%60
+    time_total = f'{m:>1}:{s:0>2}'
+    #print(time_total)
+    #print ("Текущий статус игрока", player_status)
+    if player_status == 7:
+        next_music()
+
+def long_song():
+    global m
+    global s
+    player_duration2 = player.duration()
+    m = player_duration2//1000//60
+    s = player_duration2//1000%60
+    time_total = f'{m:>1}:{s:0>2}'
+    plaing_long.setText('| Long of song: ' + f'{time_total}')
+
+timer = QTimer()
+timer.setInterval(1000)
+timer.start()
+timer.timeout.connect(check_music_status)
+timer2 = QTimer()
+timer2.setInterval(1000)
+timer2.start()
+timer2.timeout.connect(long_song)   
+
 def next_music():
     global now
     global lst
@@ -78,6 +124,8 @@ def next_music():
         now = 0
     #print(lst[now])
     player.setMedia(QMediaContent(QUrl(lst[now])))
+    long_song()
+    plaing.setText('Now playing: ' + str(basename(str(lst[now]))))
     now += 1
     playMedia()
     playMedia()
@@ -86,6 +134,7 @@ def resets():
     global lst
     global now
     player.setMedia(QMediaContent(QUrl(lst[now-1])))
+    plaing.setText('Now playing: ' + str(basename(str(lst[now-1]))))
     playMedia()
     playMedia()
 
@@ -96,6 +145,7 @@ def backs():
         pass
     else:
         player.setMedia(QMediaContent(QUrl(lst[now-2])))
+        plaing.setText('Now playing: ' + str(basename(str(lst[now-2]))))
         now -= 1
         playMedia()
         playMedia()
@@ -136,21 +186,10 @@ def download():
 
 def radio_play():
     player.setMedia(QMediaContent(QUrl('http://europaplus.hostingradio.ru:8014/ep-top256.mp3')))
+    plaing.setText('Сейчас играет: Радио - Европа плюс')
     playMedia()
     playMedia()
-
-def check_music_status():
-    player_status = player.mediaStatus()
-    player_duration = player.duration()
-    #print ("Время музыки:", player_duration)
-    #print ("Текущий статус игрока", player_status)
-    if player_status == 7:
-        next_music()
-
-timer = QTimer()
-timer.setInterval(1000)
-timer.start()
-timer.timeout.connect(check_music_status)        
+      
 
 full.doubleClicked.connect(remove)
 play.clicked.connect(playMedia)
@@ -162,6 +201,7 @@ radio.clicked.connect(radio_play)
 load.clicked.connect(download)
 row.addLayout(row1)
 row.addLayout(row2)
+row.addLayout(row5)
 row.addLayout(row4)
 row.addLayout(row3)
 main.setLayout(row)
