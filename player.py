@@ -113,7 +113,7 @@ timer.setInterval(1000)
 timer.start()
 timer.timeout.connect(check_music_status)
 timer2 = QTimer()
-timer2.setInterval(1000)
+timer2.setInterval(100)
 timer2.start()
 timer2.timeout.connect(long_song)   
 
