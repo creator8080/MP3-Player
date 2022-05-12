@@ -14,9 +14,14 @@ from PyQt5.QtGui import *
 import os
 from os.path import basename
 from PyQt5.QtCore import *
+import getpass
 
 app = QApplication([])
 main = QWidget()
+
+#main.setStyleSheet('.QWidget {background-image: url(gradient.jpg);}')
+
+
 main.setGeometry(600,500,600,500)
 main.setWindowTitle('MP3-Player')
 app.setWindowIcon(QIcon('Mp3-Player-icon.png'))
@@ -35,6 +40,7 @@ row3 = QHBoxLayout()
 row4 = QHBoxLayout()
 row5 = QHBoxLayout()
 row6 = QHBoxLayout()
+row65 = QHBoxLayout()
 row7 = QHBoxLayout()
 
 player = QMediaPlayer()
@@ -49,7 +55,7 @@ def change_volume(valum):
     player.setVolume(valum)
     colum_count.setText(str(valum))
 volumslider.valueChanged[int].connect(change_volume)
-with open('for_player','r') as f:
+with open('for_player.txt','r') as f:
     what = f.read()
 lst = ast.literal_eval(what)
 with open('all_playlist.txt','r') as f:
@@ -90,6 +96,21 @@ radio = QPushButton('Radio')
 load = QPushButton('Download song')
 volum_know = QLabel('Volum loud:')
 colum_count = QLabel(str(volum))
+delete_bg = QPushButton('Delete')
+all_backgrounds = QComboBox()
+download_background = QPushButton('Download')
+all_back = []
+
+with open('all_backs.txt','r') as f:
+    what = f.read()
+    all_back = ast.literal_eval(what)
+for i in all_back:
+    all_backgrounds.addItems([str(basename(i))])
+try:
+    name = all_back[0]
+    main.setStyleSheet('.QWidget {background-image: url(' + basename(name) + ');}')
+except:
+    pass
 
 row1.addWidget(play)
 row1.addWidget(next)
@@ -109,6 +130,9 @@ row6.addWidget(file_name)
 row6.addWidget(add_file_name)
 row7.addWidget(all_play_list)
 row7.addWidget(delete_file_name)
+row65.addWidget(all_backgrounds)
+row65.addWidget(download_background)
+row65.addWidget(delete_bg)
 
 def playMedia():
     if play.text() == 'Play':
@@ -183,6 +207,20 @@ def backs():
         playMedia()
         playMedia()
 
+def new_bg():
+    global all_back
+    wb_patch = QFileDialog.getOpenFileName()[0]
+    if not wb_patch in all_back:
+        with open('all_backs.txt','w') as f:
+            all_back.append(wb_patch)
+            f.write(str(all_back))
+        with open('all_backs.txt','r') as f:
+            what = f.read()
+            all_back = ast.literal_eval(what)
+        all_backgrounds.clear()
+        for i in all_back:
+            all_backgrounds.addItems([str(basename(i))])
+
 def remove():
     global lst
     need = (full.currentIndex().data())
@@ -218,11 +256,18 @@ def download():
     item_list = lst
     model.setStringList(item_list)
     full.setModel(model)
+def change_bg():
+    global all_back
+    name = all_backgrounds.currentText()
+    for i in all_back:
+        if name in i:
+            main.setStyleSheet('.QWidget {background-image: url(' + i + ');}')
 
 def create():
     global all_play_list
     name_play_list = file_name.text()
     if not os.path.abspath(name_play_list + '.txt') in playlists_lst and name_play_list != '':
+        print(os.path.abspath(name_play_list + '.txt'))
         file = open(name_play_list + '.txt', 'a')
         total = os.path.abspath(name_play_list + '.txt')
         file_name.setText('')
@@ -259,17 +304,30 @@ def delete():
     global counto
     global all_play_list
     global playlists_lst
+    sup = all_play_list.currentText()
     for i in playlists_lst:
-        if i != os.path.abspath('for_player.txt'):
-            if i == os.path.abspath(choose):
-                with open('all_playlist.txt','w') as f:
-                    playlists_lst.remove(os.path.abspath(choose))
-                    os.remove(os.path.abspath(choose))
-                    f.write(str(playlists_lst))        
-                all_play_list.removeItem(counto)
-            counto += 1
-        else:
-            pass
+        if sup in i:
+            playlists_lst.remove(i)
+            os.remove(i)
+            with open('all_playlist.txt','w') as f:
+                f.write(str(playlists_lst))
+            all_play_list.clear()
+            for i in playlists_lst:
+                all_play_list.addItems([str(basename(i))])
+def remove_bg():
+    global all_back
+    neede = all_backgrounds.currentText()
+    for i in all_back:
+        if neede in i:
+            all_back.remove(i)
+    with open('all_backs.txt','w') as f:
+        f.write(str(all_back))
+    with open('all_backs.txt','r') as f:
+        what = f.read()
+        all_back = ast.literal_eval(what)
+    all_backgrounds.clear()
+    for i in all_back:
+        all_backgrounds.addItems([str(basename(i))])
 
 def radio_play():
     player.setMedia(QMediaContent(QUrl('http://europaplus.hostingradio.ru:8014/ep-top256.mp3')))
@@ -301,6 +359,10 @@ radio.clicked.connect(radio_play)
 load.clicked.connect(download)
 delete_file_name.clicked.connect(delete)
 all_play_list.currentTextChanged.connect(stat)
+all_backgrounds.currentTextChanged.connect(change_bg)
+download_background.clicked.connect(new_bg)
+delete_bg.clicked.connect(remove_bg)
+
 row.addLayout(row1)
 row.addLayout(row2)
 row.addLayout(row5)
@@ -308,6 +370,7 @@ row.addLayout(row4)
 row.addLayout(row3)
 row.addLayout(row6)
 row.addLayout(row7)
+row.addLayout(row65)
 main.setLayout(row)
 
 main.show()
