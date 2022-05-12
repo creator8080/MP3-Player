@@ -1,7 +1,7 @@
 from multiprocessing import Value
 from re import M
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, QLineEdit,QMessageBox,QListWidget,
- QHBoxLayout, QVBoxLayout,QFileDialog,QTextBrowser, QSlider,QListView,QComboBox)
+ QHBoxLayout, QVBoxLayout,QFileDialog,QTextBrowser, QSlider,QListView,QComboBox,QErrorMessage)
 from PyQt5.QtCore import Qt,QTimer,QStringListModel 
 from PyQt5.QtGui import QPalette,QIcon, QBrush, QPixmap
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
@@ -14,13 +14,9 @@ from PyQt5.QtGui import *
 import os
 from os.path import basename
 from PyQt5.QtCore import *
-import getpass
 
 app = QApplication([])
 main = QWidget()
-
-#main.setStyleSheet('.QWidget {background-image: url(gradient.jpg);}')
-
 
 main.setGeometry(600,500,600,500)
 main.setWindowTitle('MP3-Player')
@@ -106,11 +102,19 @@ with open('all_backs.txt','r') as f:
     all_back = ast.literal_eval(what)
 for i in all_back:
     all_backgrounds.addItems([str(basename(i))])
+with open('num_bg.txt','r') as f:
+    last = f.read()
 try:
+    name = all_back[int(last)]
+    main.setStyleSheet('.QWidget {background-image: url(' + basename(name) + ');}')
+    all_backgrounds.setCurrentIndex(int(last))
+except:
+    msg = QMessageBox()
+    msg.setWindowTitle("Error!")
+    msg.setText("Error!")
+    msg.exec_()
     name = all_back[0]
     main.setStyleSheet('.QWidget {background-image: url(' + basename(name) + ');}')
-except:
-    pass
 
 row1.addWidget(play)
 row1.addWidget(next)
@@ -262,6 +266,9 @@ def change_bg():
     for i in all_back:
         if name in i:
             main.setStyleSheet('.QWidget {background-image: url(' + i + ');}')
+            indx = all_back.index(i)
+    with open('num_bg.txt','w') as f:
+        f.write(str(indx))
 
 def create():
     global all_play_list
@@ -280,6 +287,23 @@ def create():
         file.close()
         with open(name_play_list + '.txt','w') as f:
             f.write('[]')
+
+def stat2():
+    global lst
+    global choose
+    global model
+    global full
+    global now
+    if secret.text() == 'Show all songs':
+        secret.setText('Hide all songs') 
+    if all_play_list.currentText() != '':
+        choose = all_play_list.currentText()
+        with open(choose,'r') as f:
+            need = f.read()
+            lst = ast.literal_eval(need)
+            item_list = lst
+            model.setStringList(item_list)
+            full.setModel(model)
 
 def stat():
     global lst
@@ -343,7 +367,7 @@ def hides():
         plaing.hide()
         secret.setText('Show all songs')
     else:
-        stat()
+        stat2()
         plaing.show()
         secret.setText('Hide all songs')    
 
