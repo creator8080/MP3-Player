@@ -180,35 +180,43 @@ timer2.timeout.connect(long_song)
 def next_music():
     global now
     global lst
-    if now > len(lst) - 1:
-        now = 0
-    #print(lst[now])
-    player.setMedia(QMediaContent(QUrl(lst[now])))
-    long_song()
-    plaing.setText('Now playing: ' + str(basename(str(lst[now]))))
-    now += 1
-    playMedia()
-    playMedia()
-
+    try:
+        if now > len(lst) - 1:
+            now = 0
+        #print(lst[now])
+        player.setMedia(QMediaContent(QUrl(lst[now])))
+        long_song()
+        plaing.setText('Now playing: ' + str(basename(str(lst[now]))))
+        now += 1
+        playMedia()
+        playMedia()
+    except:
+        pass
 def resets():
-    global lst
-    global now
-    player.setMedia(QMediaContent(QUrl(lst[now-1])))
-    plaing.setText('Now playing: ' + str(basename(str(lst[now-1]))))
-    playMedia()
-    playMedia()
+    try:
+        global lst
+        global now
+        player.setMedia(QMediaContent(QUrl(lst[now-1])))
+        plaing.setText('Now playing: ' + str(basename(str(lst[now-1]))))
+        playMedia()
+        playMedia()
+    except:
+        pass
 
 def backs():
-    global lst
-    global now
-    if now == 1:
+    try:
+        global lst
+        global now
+        if now == 1:
+            pass
+        else:
+            player.setMedia(QMediaContent(QUrl(lst[now-2])))
+            plaing.setText('Now playing: ' + str(basename(str(lst[now-2]))))
+            now -= 1
+            playMedia()
+            playMedia()
+    except:
         pass
-    else:
-        player.setMedia(QMediaContent(QUrl(lst[now-2])))
-        plaing.setText('Now playing: ' + str(basename(str(lst[now-2]))))
-        now -= 1
-        playMedia()
-        playMedia()
 
 def new_bg():
     global all_back
