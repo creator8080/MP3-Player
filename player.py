@@ -109,12 +109,11 @@ try:
     main.setStyleSheet('.QWidget {background-image: url(' + basename(name) + ');}')
     all_backgrounds.setCurrentIndex(int(last))
 except:
-    msg = QMessageBox()
-    msg.setWindowTitle("Error!")
-    msg.setText("Error!")
-    msg.exec_()
-    name = all_back[0]
-    main.setStyleSheet('.QWidget {background-image: url(' + basename(name) + ');}')
+    pass
+try:
+    pass
+except:
+    pass
 
 row1.addWidget(play)
 row1.addWidget(next)
@@ -214,7 +213,7 @@ def backs():
 def new_bg():
     global all_back
     wb_patch = QFileDialog.getOpenFileName()[0]
-    if not wb_patch in all_back:
+    if not wb_patch in all_back and not wb_patch == '':
         with open('all_backs.txt','w') as f:
             all_back.append(wb_patch)
             f.write(str(all_back))
@@ -254,21 +253,25 @@ def ran():
 def download():
     global lst
     wb_patch = QFileDialog.getOpenFileName()[0]
-    with open(choose,'w') as f:
-        lst.append(wb_patch)
-        f.write(str(lst))
-    item_list = lst
-    model.setStringList(item_list)
-    full.setModel(model)
+    if wb_patch != '':  
+        with open(choose,'w') as f:
+            lst.append(wb_patch)
+            f.write(str(lst))
+        item_list = lst
+        model.setStringList(item_list)
+        full.setModel(model)
 def change_bg():
     global all_back
     name = all_backgrounds.currentText()
-    for i in all_back:
-        if name in i:
-            main.setStyleSheet('.QWidget {background-image: url(' + i + ');}')
-            indx = all_back.index(i)
-    with open('num_bg.txt','w') as f:
-        f.write(str(indx))
+    try:
+        for i in all_back:
+            if name in i:
+                main.setStyleSheet('.QWidget {background-image: url(' + i + ');}')
+                indx = all_back.index(i)
+        with open('num_bg.txt','w') as f:
+            f.write(str(indx))
+    except:
+        main.setStyleSheet('.QWidget {background-color: rgb(255,255,255);}')
 
 def create():
     global all_play_list
@@ -329,15 +332,16 @@ def delete():
     global all_play_list
     global playlists_lst
     sup = all_play_list.currentText()
-    for i in playlists_lst:
-        if sup in i:
-            playlists_lst.remove(i)
-            os.remove(i)
-            with open('all_playlist.txt','w') as f:
-                f.write(str(playlists_lst))
-            all_play_list.clear()
-            for i in playlists_lst:
-                all_play_list.addItems([str(basename(i))])
+    if sup !='for_player.txt':
+        for i in playlists_lst:
+            if sup in i:
+                playlists_lst.remove(i)
+                os.remove(i)
+                with open('all_playlist.txt','w') as f:
+                    f.write(str(playlists_lst))
+                all_play_list.clear()
+                for i in playlists_lst:
+                    all_play_list.addItems([str(basename(i))])
 def remove_bg():
     global all_back
     neede = all_backgrounds.currentText()
